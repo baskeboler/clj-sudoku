@@ -60,9 +60,9 @@
 
 
 (defprotocol BoardCoords
-  (row [this i])
-  (col [this j])
-  (subboard [this i j]))
+  (row [this i] "returns the i'th row")
+  (col [this j] "returns the j'th column")
+  (subboard [this i j] "returns the sub-board that has coord i, j as upper left corner"))
 
 (defrecord Sudoku [rows]
   BoardCoords
