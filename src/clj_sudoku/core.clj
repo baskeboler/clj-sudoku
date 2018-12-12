@@ -2,8 +2,11 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.zip :as z]
             [com.rpl.specter :as specter]
-            [clojure.java.io :as jio]))
-
+            [clojure.java.io :as jio]
+            [ring.server.standalone :as ring :refer :all]
+            [ring.util.response :as response]
+            [ring.middleware.json :as json]
+            [ring.util.request :as request]))
 (defn uniques [ns]
   (= (count ns) (count (set ns))))
 
@@ -163,41 +166,6 @@
 
 (defn new-point [i j] {:x i :y j})
 
-(defn rand-sudoku2
-  ([]
-   (let [ps (for [i (range 9) j (range 9)] (new-point i j))
-         e  (empty-sudoku)]
-     (loop [sud           e
-            remaining-pos ps
-            ready-pos     []]
-       (println sud)
-       (if (empty? remaining-pos)
-         sud
-         (let [p       (first remaining-pos)
-               avail   (if (and (:x p) (:y p))
-                         (available-values sud (:x p) (:y p)) [])]
-           ;; (println "point is " p)
-           (if-not (empty? avail)
-             (let  [new-val (first (shuffle avail))]
-               (recur (set-position sud (:x p) (:y p) new-val)
-                      (rest remaining-pos)
-                      (cons p ready-pos)))
-             (let [x (:x p)
-                   y (:y p)
-                   neis       (neighbors (into #{} ready-pos) x y)
-                   sels       (into #{} neis)
-                   new-remain (clojure.set/union (into #{} remaining-pos) (into #{} sels))
-                   new-ready  (clojure.set/difference  (into #{} ready-pos) (into #{} sels))
-                   new-sud    (loop [s  sels
-                                     sd sud]
-                                (if (empty? s)
-                                  sd
-                                  (let [p (first s)]
-                                  ;; (println "point " p)
-                                    (recur (rest s) (set-position sd
-                                                                  (:x p) (:y p)
-                                                                  0)))))]
-               (recur new-sud  new-remain new-ready)))))))))
 
 (def emty-s (empty-sudoku))
 
@@ -284,6 +252,7 @@
 (defn is-freedom-node [id]
   (fn [n]
     (= id (:sb-pos n))))
+
 (defn freedom-vals [f]
   (:sb-val f))
 
@@ -331,6 +300,7 @@
        (doseq [r (doall s) :let [line (apply str r)]]
          (-> w
              (.write (str line "\n")))))))
+
 (defn cache-sudoku [^Sudoku s]
   (println s)
   (let [
@@ -364,3 +334,18 @@
     (println line) 
     (println)))
 
+
+(defn handler [req]
+  (clojure.tools.logging/info (:path req))
+  (response/response @sudokus))
+
+(defn start-server
+  []
+  (ring/serve
+   (-> handler
+       (ring.middleware.reload/wrap-reload)
+       (ring.middleware.refresh/wrap-refresh)
+       (json/wrap-json-params)
+       (json/wrap-json-body)
+       (json/wrap-json-response))
+   {:port 4040}))
