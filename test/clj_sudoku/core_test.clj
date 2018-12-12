@@ -2,6 +2,8 @@
   (:require [clojure.test :refer :all]
             [clj-sudoku.core :refer :all]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+
+(deftest gen-sudoku
+  (testing "Generates correct sudoku boards"
+    (let [s (sku)]
+      (is s))))
