@@ -69,19 +69,6 @@
         col      (filter #(> % 0) (nth (columns rows) i))]
     (clojure.set/difference all-vals row col)))
 
-(defn possible-values-matrix [rows i j]
-  (let [positions (for [x (range i (+ 3 i))
-                        y (range j (+ 3 j))]
-                    [x y])]
-    (map (fn [pos]
-           {:x             (first pos)
-            :y             (second pos)
-            :possible-vals (possible-values rows (first pos) (second pos))})
-         positions)))
-
-(defn valid-possibility-matrix? [m]
-  (let [possible (reduce clojure.set/union (map :possible-vals m))]
-    (= #{} (clojure.set/intersection possible (set (range 1 10))))))
 
 (defn valid-subboard-coord? [i j]
   (let [positions #{0 3 6}]
@@ -106,8 +93,6 @@
   BoardCoords
   (insert-subboard
     [this board i j]
-    ;; {:pre [(valid-subboard-coord? i j)
-    ;;        (s/valid? subboard? board)]}
     (println "hola")
     (let [ps       (for [x (range i (+ 3 i))
                          y (range j (+ 3 j))]
@@ -204,7 +189,7 @@
     ps))
 
 (defn clear-sb [sud i j]
-  (println "clearing " i " " j)
+  ;; (println "clearing " i " " j)
   (-> sud
       (insert-sb (build-subboard (repeat 9 0)) i j)))
 
@@ -230,8 +215,8 @@
     (assert (enough-freedom? freedom))
     (loop [result []
            tries 0]
-
-      (if (and (= 9 (count result)) (< tries 10))
+      (assert (< tries 10))
+      (if (= 9 (count result))
         (->> result
              (sort-by :pos)
              (map :value)
@@ -270,7 +255,7 @@
                     ;; (insert-sb (rand-subpermutation (range 1 10) 9) 3 3)
                     ;; (insert-sb (rand-subpermutation (range 1 10) 9) 6 6))
         build-sb (fn [sud i j]
-                   (println "building sb " i " " j)
+                   ;; (println "building sb " i " " j)
                    (insert-sb sud (posible-sb sud i j) i j))
         final   (-> initial
                     (build-sb 3 3)
@@ -314,7 +299,7 @@
 (defn sku-with-retries []
   (loop [retries 50
          res (maybe-sku)]
-    (println "try: " (- 50 retries))
+    ;; (println "try: " (- 50 retries))
     (if (< retries 0)
       res
       (if (= :ok (:result res))
