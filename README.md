@@ -2,9 +2,9 @@
 
 A Clojure toy library designed to generate sudokus.
 ## example
-run `(rand-sudoku)` a couple of times. previous boards are saved to `past-sudokus` atom.
-```$xslt
-past-sudokus
+run `(random-sudoku)` a couple of times. previous boards are saved to `sudokus` atom.
+```
+(past-sudokus)
 =>
 #atom[[[[4 2 3 5 8 6 7 1 9]
         [9 7 8 3 4 1 2 6 5]

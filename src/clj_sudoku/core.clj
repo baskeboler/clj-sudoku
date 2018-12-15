@@ -296,7 +296,7 @@
           :created created}
          (swap! sudokus assoc id))))
 
-(defn sku-with-retries []
+(defn random-sudoku []
   (loop [retries 50
          res (maybe-sku)]
     ;; (println "try: " (- 50 retries))
@@ -334,3 +334,6 @@
        (json/wrap-json-body)
        (json/wrap-json-response))
    {:port 4040}))
+
+(defn past-sudokus []
+  (map (comp :rows :sudoku) (vals @sudokus)))
